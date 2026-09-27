@@ -1,0 +1,45 @@
+# أسرار — لا تُرفع أبداً
+.env
+.env.*
+*.jks
+*.keystore
+key.properties
+google-services.json
+GoogleService-Info.plist
+
+# Flutter / Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.g.dart.bak
+coverage/
+
+# أندرويد
+android/.gradle/
+android/local.properties
+android/**/GeneratedPluginRegistrant.java
+android/app/.cxx/
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.*
+**/xcuserdata/
+
+# ويب
+web/.dart_tool/
+
+# محررات ونظام
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+*.log

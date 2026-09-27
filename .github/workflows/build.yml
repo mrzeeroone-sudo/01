@@ -1,0 +1,108 @@
+# =====================================================================
+#  البناء التلقائي: فحص → APK لأندرويد → نسخة الويب على GitHub Pages
+#  يعمل عند كل دفع إلى main، وعند كل PR، وعند وسم v* يُنشئ Release يحمل APK.
+#  المتغيرات المطلوبة في Settings → Secrets → Actions:
+#    SUPABASE_URL, SUPABASE_ANON_KEY
+#  قبل المهمة 1 (لا يوجد pubspec.yaml بعد) تُتخطى خطوات البناء تلقائياً.
+# =====================================================================
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+env:
+  FLUTTER_CHANNEL: stable
+  DART_DEFINES: >-
+    --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+    --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}
+
+jobs:
+  check:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    outputs:
+      has_project: ${{ steps.probe.outputs.has_project }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: probe
+        run: |
+          if [ -f pubspec.yaml ]; then echo "has_project=true" >> "$GITHUB_OUTPUT"; else echo "has_project=false" >> "$GITHUB_OUTPUT"; echo "No Flutter project yet (run Task 1 first)."; fi
+      - if: steps.probe.outputs.has_project == 'true'
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+      - if: steps.probe.outputs.has_project == 'true'
+        run: |
+          flutter pub get
+          if [ -f l10n.yaml ]; then flutter gen-l10n; fi
+          flutter analyze
+          if [ -d test ]; then flutter test; fi
+
+  android:
+    name: Build APK
+    needs: check
+    if: needs.check.outputs.has_project == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+      - run: flutter pub get
+      - run: flutter build apk --release ${{ env.DART_DEFINES }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+      # عند وسم الإصدار (مثل v0.1.0) يُنشأ Release برابط مباشر للـ APK يفتحه السواق على جواله
+      - if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+          generate_release_notes: true
+
+  web:
+    name: Build and deploy web
+    needs: check
+    if: needs.check.outputs.has_project == 'true' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    continue-on-error: true   # نشر Pages يفشل على المستودعات الخاصة في الخطة المجانية؛ لا يوقف بقية البناء
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+      - run: flutter pub get
+      - run: flutter build web --release --base-href "/${{ github.event.repository.name }}/" ${{ env.DART_DEFINES }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web
+          retention-days: 30
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+      - id: deployment
+        uses: actions/deploy-pages@v4
