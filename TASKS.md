@@ -18,7 +18,7 @@
 
 ## المهمة 1 — هيكل المشروع والتعريب والربط بـ Supabase
 
-- [ ] المطلوب:
+- [x] المطلوب:
   - `flutter create` باسم الحزمة `home_needs` ومعرّف `sa.homeneeds.app` للمنصات android, ios, web فقط.
   - إضافة الحزم المذكورة في `CLAUDE.md` قسم 2.
   - إعداد l10n: `l10n.yaml` + `lib/l10n/app_ar.arb` (الافتراضية) و`app_en.arb` و`app_ur.arb` بنصوص الشاشات الأساسية (تسجيل الدخول، القائمة، الحالات الست، الأزرار العامة).
@@ -26,7 +26,7 @@
   - `go_router` بمسارات مبدئية: `/sign-in`, `/join`, `/home` (البيت), `/tasks` (المنفذ)، وشاشات placeholder.
   - ثيم واحد: خط يدعم العربية والأردية (Noto Naskh Arabic أو Cairo من google_fonts)، ألوان محايدة، أرقام غربية.
   - `.gitignore` يشمل `.env`, `*.jks`, `key.properties`.
-- [ ] معيار القبول: `flutter analyze` صفر مشاكل، `flutter build web` ينجح، تبديل اللغة يغيّر اتجاه الواجهة.
+- [x] معيار القبول: `flutter analyze` صفر مشاكل، `flutter build web` ينجح، تبديل اللغة يغيّر اتجاه الواجهة.
 - أمر البدء: `اقرأ CLAUDE.md و TASKS.md ونفّذ المهمة 1 فقط.`
 
 ## المهمة 2 — الحسابات والبيت والأدوار

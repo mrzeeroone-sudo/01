@@ -43,3 +43,6 @@ web/.dart_tool/
 .DS_Store
 Thumbs.db
 *.log
+
+# ملفات التعريب المولّدة (تُولَّد بـ flutter gen-l10n وعند البناء)
+lib/core/l10n/
